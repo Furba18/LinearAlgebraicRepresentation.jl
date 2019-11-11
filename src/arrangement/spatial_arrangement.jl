@@ -217,14 +217,23 @@ The function returns the full arranged complex as a list of vertices V and a cha
 ## Additional arguments:
 - `multiproc::Bool`: Runs the computation in parallel mode. Defaults to `false`.
 """
+#const rV = Array{Float64,2}(undef,0,3)
+#const rcopEV = SparseArrays.SparseMatrixCSC{Int8,Int64}
+#const rcopFE = SparseArrays.SparseMatrixCSC{Int8,Int64}
+
 function spatial_arrangement(
 		V::Lar.Points, # by rows
 		copEV::Lar.ChainOp,
 		copFE::Lar.ChainOp, multiproc::Bool=false)
 
 	# face subdivision
+
 	rV, rcopEV, rcopFE = Lar.Arrangement.spatial_arrangement_1( V, copEV, copFE, multiproc ) # copFE global
+	#@show rv,rcopEV,rcopFE
+	#println("Sono dopo arr1")
 	bicon_comps = Lar.Arrangement.biconnected_components(rcopEV)
+	#@show bicon_comps
+	#println("Sono dopo bicon")
 	#W,bicon_comps = Lar.biconnectedComponent((W,EV))
 	#@error "comps# = $(length(bicon_comps))"
 	# 3-complex and containment graph

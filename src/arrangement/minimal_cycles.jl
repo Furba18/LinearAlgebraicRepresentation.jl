@@ -125,6 +125,7 @@ function minimal_cycles(angles_fn::Function, verbose=false)
                     s = i
                 end
             end
+			#@show s
             return s
         end
         for lld in 1:lld_cellsnum
@@ -138,6 +139,7 @@ function minimal_cycles(angles_fn::Function, verbose=false)
         end
         function nextprev(lld::Int64, ld::Int64, norp)
             as = angles[lld]
+			#@show as
             #ne = findfirst(as, ld)  (findfirst(isequal(v), A), 0)[1]
             ne = (findfirst(isequal(ld), as), 0)[1]
             while true
@@ -167,11 +169,16 @@ function minimal_cycles(angles_fn::Function, verbose=false)
             else
                 c_ld[sigma] = -dir_marks[sigma]
             end
+			#@show c_ld
             c_lld = ld_bounds*c_ld
+			#@show c_lld
             while c_lld.nzind != []
+				tau = 0
 				#corolla = spzeros(Int8, ld_cellsnum)
 				corolla = zeros(Int64, ld_cellsnum)
                 for tau in c_lld.nzind
+					#@show tau
+
                     b_ld = ld_bounds[tau, :]
                     pivot = intersect(c_ld.nzind, b_ld.nzind)[1]
                     adj = nextprev(tau, pivot, sign(-c_lld[tau]))
@@ -180,6 +187,7 @@ function minimal_cycles(angles_fn::Function, verbose=false)
                         corolla[adj] *= -1
                     end
                 end
+				
                 c_ld += corolla
                 c_lld = ld_bounds*c_ld
             end

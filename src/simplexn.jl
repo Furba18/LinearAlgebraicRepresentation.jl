@@ -215,7 +215,7 @@ function simplexFacets(simplices)
 	return sort(collect(Set(out)))
 end
 
-CV = simplexGrid([1,1,1])
+const CV = simplexGrid([1,1,1])
 
 
 """

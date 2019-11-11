@@ -3,40 +3,40 @@
 #	Biconnected components
 #---------------------------------------------------------------------
 
-""" 
+"""
 	verts2verts(EV::Lar.Cells)::Lar.Cells
 
 Adjacency lists of vertices of a cellular 1-complex.
 
 # Example
 
-```julia 
+```julia
 julia> V,(VV,EV,FV) = Lar.cuboidGrid([3,3],true);
 
 julia> verts2verts(EV::Lar.Cells)::Lar.Cells
 16-element Array{Array{Int64,1},1}:
- [2, 5]         
- [1, 3, 6]      
- [2, 4, 7]      
- [3, 8]         
- [1, 6, 9]      
- [2, 5, 7, 10]  
- [3, 6, 8, 11]  
- [4, 7, 12]     
- [5, 10, 13]    
- [6, 9, 11, 14] 
+ [2, 5]
+ [1, 3, 6]
+ [2, 4, 7]
+ [3, 8]
+ [1, 6, 9]
+ [2, 5, 7, 10]
+ [3, 6, 8, 11]
+ [4, 7, 12]
+ [5, 10, 13]
+ [6, 9, 11, 14]
  [7, 10, 12, 15]
- [8, 11, 16]    
- [9, 14]        
- [10, 13, 15]   
- [11, 14, 16]   
- [12, 15]       
+ [8, 11, 16]
+ [9, 14]
+ [10, 13, 15]
+ [11, 14, 16]
+ [12, 15]
 ```
 """
 function verts2verts(EV::Lar.Cells)::Lar.Cells
     cscEV = Lar.characteristicMatrix(EV)
     cscVE = convert(Lar.ChainOp, cscEV')
-    cscVV = cscVE * cscEV   
+    cscVV = cscVE * cscEV
     rows,cols,data = findnz(cscVV)
     VV = [ findnz(cscVV[k,:])[1] for k=1:size(cscVV,2) ]
     return [setdiff(vs,[k]) for (k,vs) in enumerate(VV)] # remove reflexive pairs
@@ -44,13 +44,13 @@ end
 
 
 
-""" 
+"""
 	DFV_visit( VV::cells, out::Array, count::Int, visited::Array, parent::Array, d::Array, low::Array, stack::Array, u::Int )::Array
 
 Hopcroft-Tarjan algorithm. Depth-First-Visit recursive algorithm.
 """
 function DFV_visit( VV::Lar.Cells, out::Array, count::Int, visited::Array, parent::Array, d::Array, low::Array, stack::Array, u::Int )::Array
-		
+
     visited[u] = true
     count += 1
     d[u] = count
@@ -74,7 +74,9 @@ function DFV_visit( VV::Lar.Cells, out::Array, count::Int, visited::Array, paren
     out
 end
 
-visited=[]; count=0; out=[]; parent=[]; d=[];low=[]; stack=[]; u=1
+const visited=[]; const count=0; const out=[];
+const parent=[]; const d=[]; const low=[]; const stack=[];
+const u=1
 
 """
 	outputComp(stack::Array, u::Int, v::Int)::Array
@@ -86,18 +88,18 @@ function outputComp(stack::Array, u::Int, v::Int)::Array
     while true
         e = pop!(stack)[1]
         push!(out,e)
-        if e == (u,v) 
+        if e == (u,v)
         	break
         end
     end
-    return [out] 
+    return [out]
 end
 
 
-""" 
+"""
 	biconnectedComponent(model)
 
-Main procedure for computation of biconnected components of a graph 
+Main procedure for computation of biconnected components of a graph
 represented by a LAR unsigned pair (Points, Cells).
 
 # Example
@@ -106,9 +108,9 @@ represented by a LAR unsigned pair (Points, Cells).
 julia> V =  [3.0  6.0  6.0  6.0  6.0  0.0  3.0  10.0  10.0  10.0  0.0  3.0  0.0;
  			 2.0  2.0  0.0  4.0  8.0  4.0  4.0   4.0   0.0   8.0  8.0  0.0  0.0]
 
-julia> EV = [[1, 2], [2, 3], [2, 4], [5, 10], [3, 12], [5, 11], [6, 7], [8, 9], 
+julia> EV = [[1, 2], [2, 3], [2, 4], [5, 10], [3, 12], [5, 11], [6, 7], [8, 9],
 			 [6, 13], [12, 13], [1, 7], [1, 12], [4, 7], [4, 8], [4, 5], [8, 10]]
-			 
+
 julia> VV = [[k] for k=1:size(V,2)]
 
 julia> Plasm.view( Plasm.numbering(3)((V,[VV, EV])) )
@@ -150,16 +152,16 @@ function biconnectedComponent(model)
     visited = [false for v in V]
     parent = Union{Int, Array{Any,1}}[[] for v in V]
     d = Any[0 for v in V]
-    low = Any[0 for v in V]    
+    low = Any[0 for v in V]
     VV = Lar.verts2verts(EV)
     out = Any[]
-    for u in V 
-        if ! visited[u] 
+    for u in V
+        if ! visited[u]
             out = DFV_visit( VV,out,count,visited,parent,d,low,stack, u )
         end
     end
     out = [component for component in out if length(component) >= 1]
-    EVs = [[map(sort∘collect,edges) for edges in cat(comp) if length(edges)>1] 
+    EVs = [[map(sort∘collect,edges) for edges in cat(comp) if length(edges)>1]
     		for comp in out]
     EVs = cat(filter(x->!isempty(x), EVs))
     EVs = sort(EVs, lt=(x,y)->length(x)>length(y))
@@ -192,17 +194,17 @@ function depth_first_search(EV::Lar.Cells, start::Int=1)::
 		Tuple{Lar.Cells, Lar.Cells}
 	# initialize the data structures and start DFS
     VV = Lar.verts2verts(EV)
-    spanningtree = Array{Int,1}[];  
+    spanningtree = Array{Int,1}[];
     fronds = Array{Int,1}[]
 	number = zeros(Int, length(VV))
 
-	function DFS(v::Int, u::Int) 
+	function DFS(v::Int, u::Int)
 	# vertex u is the father of
 	# vertex v in the spanning tree being constructed
 		number[v] = i; i += 1
-		for w in VV[v] 
-			if number[w] == 0 
-				# w is not yet numbered  
+		for w in VV[v]
+			if number[w] == 0
+				# w is not yet numbered
 				push!(spanningtree, [v,w])
 				DFS(w, v)
 			elseif (number[w] < number[v]) && (w != u)
@@ -210,7 +212,7 @@ function depth_first_search(EV::Lar.Cells, start::Int=1)::
 			end
 		end
 	end
-	
+
 	# initialization of DFS algorithm
 	i = 1
 	DFS(start, 1)
@@ -220,7 +222,7 @@ end
 
 """
 	edge_biconnect(EV::Lar.Cells)
-	
+
 Compute maximal 2-edge-connected components of an undirected graph.
 
 # Examples
@@ -233,10 +235,10 @@ Plasm.view( Plasm.numbering(1.3)((V,[[[k] for k=1:size(V,2)], EV])) )
 
 julia> edge_biconnect(EV::Lar.Cells)
 4-element Array{Array{Array{Int64,1},1},1}:
- [[4, 2], [3, 4], [2, 3]]        
+ [[4, 2], [3, 4], [2, 3]]
  [[6, 1], [5, 6], [2, 5], [1, 2]]
- [[9, 7], [8, 9], [7, 8]]        
- [[1, 7]]                        
+ [[9, 7], [8, 9], [7, 8]]
+ [[1, 7]]
 ```
 
 ```julia
@@ -247,8 +249,8 @@ julia> Plasm.view( Plasm.numbering(1.3)((V,[[[k] for k=1:size(V,2)], EV])) )
 julia> EVs = edge_biconnect(EV::Lar.Cells)
 3-element Array{Array{Array{Int64,1},1},1}:
  [[8, 6], [10, 8], [9, 10], [7, 9], [6, 7]]
- [[4, 6]]                                  
- [[5, 1], [4, 5], [3, 4], [2, 3], [1, 2]]  
+ [[4, 6]]
+ [[5, 1], [4, 5], [3, 4], [2, 3], [1, 2]]
 
 julia> map(Lar.depth_first_search, EVs)
 ```
@@ -262,42 +264,39 @@ function edge_biconnect(EV::Lar.Cells)
 	function biconnect(v, u)
 		number[v] = i; i +=  1
 		lowpt[v] = number[v]
-		for w in VV[v] 
-			if number[w] == 0  # w is not yet numbered 
+		for w in VV[v]
+			if number[w] == 0  # w is not yet numbered
 				push!(stack, [v, w]) # add [v, w] to edges stack
-				
+
 				biconnect(w, v)
-				
+
 				lowpt[v] = min(lowpt[v], lowpt[w])
-				if lowpt[w] ≥ number[v] 
+				if lowpt[w] ≥ number[v]
 					# start new biconnected component
 					component = Array{Int,1}[]
 					while number[stack[end][1]] ≥ number[w]
-						u1,u2 = pop!(stack) 
+						u1,u2 = pop!(stack)
 						push!(component, [u1,u2])
 					end
 					v,w = pop!(stack)
 					push!(component, [v,w])
 					push!(components, component)
 				end
-			else 
+			else
 				if number[w] < number[v] && w ≠ u
 					push!(stack, [v,w]) # add (v, w) to edge stack;
 					lowpt[v] = min(lowpt[v], number[w]);
 				end
 			end
 		end
-	end 
-	
+	end
+
 	i = 1
 	stack = Array{Int64,1}[]
-	for w=1:length(VV) 
-		if number[w] == 0 # w is not yet numbered  
+	for w=1:length(VV)
+		if number[w] == 0 # w is not yet numbered
 			biconnect(w, 0)
 		end
 	end
 	return components
 end
-
-
-
